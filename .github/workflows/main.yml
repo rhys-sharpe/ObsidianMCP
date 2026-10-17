@@ -1,0 +1,12 @@
+name: Setup Node.js environment
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v7.1.0
+      - name: install mcpb
+        run: npm install -g @anthropic-ai/mcpb
+      - run: mcpb init
+      - run: mcpb pack
+      
