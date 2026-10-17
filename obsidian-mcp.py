@@ -10,21 +10,28 @@ mcp = MCPServer("obsidian")
 
 OBSIDIAN_DIR = sys.argv[1]
 
+def walk_vault_helper(path):
+    result = {'name': path, 'type': 'folder', 'children': []}
+    for f in Path(path).iterdir():
+        fstr = str(f)
+        if os.path.isdir(fstr):
+            result['children'].append(walk_vault_helper(fstr))
+        else:
+            contents = []
+            with open(fstr, "r") as file:
+                contents = file.readlines()
+            result['children'].append({'name': fstr, 'type': 'file', 'content': " ".join(contents)})
+
+    return result
+
+
+
+
 
 @mcp.tool()
 def walk_vault():
-    dir_dict = {OBSIDIAN_DIR: {}}
-    stack = [OBSIDIAN_DIR]
-    while len(stack) != 0:
-        current_dir = stack.pop()
-        for f in Path(current_dir).iterdir():
-            fstr = str(f)
-            if os.path.isdir(fstr):
-                dir_dict[current_dir][fstr] = []
-                stack.append(fstr)
-            else:
-                dir_dict[current_dir][fstr] = os.system(f"cat {fstr}")
-    return json.dumps(dir_dict)
+    result = walk_vault_helper(OBSIDIAN_DIR)
+    return json.dumps(result)
 
 
 if __name__ == "__main__":
